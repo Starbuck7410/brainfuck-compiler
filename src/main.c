@@ -11,11 +11,11 @@
 
 
 int main(){
-    program_T program = {
+    segment_T program = {
         .head = 0,
         .buffer = malloc(MAX_PROGRAM)
     };
-    program_T data = {
+    segment_T data = {
         .head = 0,
         .buffer = malloc(MAX_PROGRAM)
     };

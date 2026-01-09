@@ -7,10 +7,10 @@
 
 #define MAX_INSTRUCTION 10
 
-typedef struct program_T{
+typedef struct segment_T{
     size_t head;
     char * buffer;
-} program_T;
+} segment_T;
 
 typedef union inst_buffer_T {
     int32_t integer;
@@ -18,5 +18,5 @@ typedef union inst_buffer_T {
 } inst_buffer_T;
 
 
-size_t write_instruction(program_T * program, instruction_T instruction, int32_t param0, int32_t param1);
-size_t write_data(program_T * program, char * data, int32_t count);
+size_t write_instruction(segment_T * program, instruction_T instruction, int32_t param0, int32_t param1);
+size_t write_data(segment_T * program, char * data, int32_t count);

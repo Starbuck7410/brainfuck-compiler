@@ -1,6 +1,6 @@
 #include "../include/instructions.h"
 
-size_t store_sequence(program_T * program, int32_t sequence, size_t length){
+size_t store_sequence(segment_T * program, int32_t sequence, size_t length){
     inst_buffer_T inst_buffer = {.integer = sequence};
     for(size_t i = 0; i < length; i++){
         program->buffer[program->head] = inst_buffer.bytes[i];
@@ -11,7 +11,7 @@ size_t store_sequence(program_T * program, int32_t sequence, size_t length){
 
 
 // This function returns the amount of bytes the instruction occupies
-size_t write_instruction(program_T * program, instruction_T instruction, int32_t param0, int32_t param1){
+size_t write_instruction(segment_T * program, instruction_T instruction, int32_t param0, int32_t param1){
     switch (instruction){
         case INST_MOV:
         size_t count = 0;
@@ -27,7 +27,7 @@ size_t write_instruction(program_T * program, instruction_T instruction, int32_t
 
 
 
-size_t write_data(program_T * program, char * data, int32_t count){
+size_t write_data(segment_T * program, char * data, int32_t count){
     if(!data) return 0;
     int i = 0;
     while(i < count && data[i] != '\0'){
