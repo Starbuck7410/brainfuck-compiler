@@ -8,3 +8,15 @@ $(TARGET): $(SOURCE) $(INCLUDE)
 
 run: $(TARGET)
 	@./$(TARGET)
+
+dump: run
+	@echo "--- Hex dump ---" 
+	@hexdump -C output
+
+read: run
+	@echo "--- ELF Dump ---" 
+	@readelf -a output
+
+test: dump read
+	@echo "--- Program Output ---" 
+	@./output

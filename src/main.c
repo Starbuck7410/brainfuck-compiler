@@ -5,25 +5,53 @@
 #include "../include/instructions.h" 
 #include "../include/headers.h" 
 
+#define ALIGN16(number) (((number) + 15) & ~15)
+
+#define MAX_PROGRAM PAGE_SIZE
 
 
-#define MAX_PROGRAM 1024
-size_t write_instruction(FILE * file, instruction_T instruction, int32_t param0, int32_t param1);
 int main(){
-    // char * object_code = malloc(MAX_PROGRAM);
+    program_T program = {
+        .head = 0,
+        .buffer = malloc(MAX_PROGRAM)
+    };
+    program_T data = {
+        .head = 0,
+        .buffer = malloc(MAX_PROGRAM)
+    };
+    
+    char * message = "https://www.youtube.com/watch?v=AXwGVXD7qEQ\n";
+    
+    write_instruction(&program, INST_MOV, EAX, SYS_WRITE);
+    write_instruction(&program, INST_MOV, EDI, 1);
+    write_instruction(&program, INST_MOV, EDX, strlen(message));
+    write_instruction(&program, INST_MOV, ESI, 0x4010b0);
+    write_instruction(&program, INST_SYSCALL, 0, 0);  
+
+    write_instruction(&program, INST_MOV, EDI, 0);
+    write_instruction(&program, INST_MOV, EAX, SYS_EXIT);
+    write_instruction(&program, INST_SYSCALL, 0, 0);    
+    write_data(&data, message, strlen(message));
+
+    program.head = PAGE_SIZE;
+    data.head = strlen(message);
+    Elf64_Word program_offset = EHDR_SIZE + 2 * PHDR_SIZE;
+    Elf64_Word data_offset = program.head + program_offset;
+    // printf("Program offset: %u, Data offset: %u\n", program_offset, data_offset);
+
+    Elf64_Ehdr executable_header = generate_ehdr(2);
+    Elf64_Phdr program_header = generate_phdr(program_offset, program.head, PF_X | PF_R);
+    Elf64_Phdr data_header = generate_phdr(data_offset, data.head, PF_W | PF_R);
+
+
 
     FILE * output_file = fopen("output", "w");
-    
-
-    Elf64_Ehdr executable_header = generate_ehdr();
-    Elf64_Phdr program_header = generate_phdr(7);
-    // Elf64_Shdr section_header = generate_shdr(SHT_PROGBITS);
-    fwrite(&executable_header, 1, sizeof(executable_header), output_file);
-    fwrite(&program_header, 1, sizeof(program_header), output_file);
-    write_instruction(output_file, INST_MOV, EAX, SYS_EXIT);
-    write_instruction(output_file, INST_SYSCALL, 0, 0);
+    fwrite(&executable_header, 1, EHDR_SIZE, output_file);
+    fwrite(&program_header, 1, PHDR_SIZE, output_file);
+    fwrite(&data_header, 1, PHDR_SIZE, output_file);
+    fwrite(program.buffer, program.head, 1, output_file);
+    fwrite(data.buffer, strlen(message), 1, output_file);
     fclose(output_file);
-    // fwrite(&section_header, 1, sizeof(section_header), output_file);
-    // free(object_code);
+    free(program.buffer);
     return 0;
 }
