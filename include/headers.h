@@ -20,3 +20,4 @@ typedef struct {
 
 Elf64_Ehdr generate_ehdr(Elf64_Half phdr_count);
 Elf64_Phdr generate_phdr(Elf64_Off offset, Elf64_Xword size, Elf64_Word flags);
+Elf64_Phdr generate_tape(Elf64_Off offset, Elf64_Xword size, Elf64_Word flags);

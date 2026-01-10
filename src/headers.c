@@ -43,5 +43,19 @@ Elf64_Phdr generate_phdr(Elf64_Off offset, Elf64_Xword size, Elf64_Word flags){
     };
     return program_header;
 }
+
+Elf64_Phdr generate_tape(Elf64_Off offset, Elf64_Xword size, Elf64_Word flags){
+    Elf64_Phdr program_header = {
+        .p_type = PT_LOAD,
+        .p_offset = 0,
+        .p_vaddr = VADDR_START + offset,
+        .p_paddr = 0,
+        .p_filesz = 0, 
+        .p_memsz = size, 
+        .p_flags = flags,
+        .p_align = PAGE_SIZE
+    };
+    return program_header;
+}
  
     
