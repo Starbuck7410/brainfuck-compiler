@@ -15,7 +15,7 @@ Elf64_Ehdr generate_ehdr(Elf64_Half phdr_count){
         },
         .e_type = ET_EXEC,
         .e_machine = EM_X86_64,
-        .e_entry = VADDR_START + EHDR_SIZE+ phdr_count * PHDR_SIZE,
+        .e_entry = VADDR_START + PAGE_SIZE,
         .e_phoff = EHDR_SIZE,
         .e_shoff = 0,
         .e_flags = 0,

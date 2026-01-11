@@ -19,4 +19,4 @@ read: run
 
 test: dump read
 	@echo "--- Program Output ---" 
-	@./output
+	@bash -c './output; ret=$$?; echo "Return code: $$ret"'
