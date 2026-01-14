@@ -6,8 +6,11 @@
 #include "../include/headers.h" 
 
 // #define ALIGN16(number) (((number) + 15) & ~15)
-#define BUFFER_OUTPUT 0x403000
-#define BUFFER_TAPE 0x404800
+#define PROGRAM_PAGES 4
+#define TAPE_PAGES 2
+
+#define BUFFER_OUTPUT (0x401000 + ((PAGE_SIZE) * (PROGRAM_PAGES)))
+#define BUFFER_TAPE (0x402000 + ((PAGE_SIZE) * (PROGRAM_PAGES)) + ((TAPE_PAGES * (PAGE_SIZE / 2))))
 
 
 
@@ -19,11 +22,11 @@ int main(int argc, char ** argv){
 
     segment_T program = {
         .head = 0,
-        .buffer = malloc(3*PAGE_SIZE)
+        .buffer = malloc(PROGRAM_PAGES * PAGE_SIZE)
     };
     segment_T data = {
         .head = 0,
-        .buffer = malloc(3*PAGE_SIZE)
+        .buffer = malloc(PAGE_SIZE)
     };
     char * zeroes = malloc(PAGE_SIZE);
     FILE * input_file = fopen(argv[1], "r");
@@ -96,9 +99,9 @@ int main(int argc, char ** argv){
     
     Elf64_Ehdr executable_header = generate_ehdr(4);
     Elf64_Phdr ehdr_header = generate_phdr(0, PAGE_SIZE, PF_R);
-    Elf64_Phdr program_header = generate_phdr(PAGE_SIZE, 2 * PAGE_SIZE, PF_X | PF_R);
-    Elf64_Phdr data_header = generate_phdr(3 * PAGE_SIZE, PAGE_SIZE, PF_W | PF_R);
-    Elf64_Phdr tape_header = generate_tape(4 * PAGE_SIZE, PAGE_SIZE, PF_W | PF_R);
+    Elf64_Phdr program_header = generate_phdr(PAGE_SIZE, PROGRAM_PAGES* PAGE_SIZE, PF_X | PF_R);
+    Elf64_Phdr data_header = generate_phdr((1 + PROGRAM_PAGES) * PAGE_SIZE, PAGE_SIZE, PF_W | PF_R);
+    Elf64_Phdr tape_header = generate_tape((2 + PROGRAM_PAGES) * PAGE_SIZE, TAPE_PAGES * PAGE_SIZE, PF_W | PF_R);
 
     FILE * output_file = fopen(argv[2], "w");
     fwrite(&executable_header, 1, EHDR_SIZE, output_file);
@@ -107,8 +110,8 @@ int main(int argc, char ** argv){
     fwrite(&data_header, 1, PHDR_SIZE, output_file);
     fwrite(&tape_header, 1, PHDR_SIZE, output_file);
     fwrite(zeroes, 1, PAGE_SIZE - 4 * PHDR_SIZE - EHDR_SIZE, output_file);
-    fwrite(program.buffer, 2 * PAGE_SIZE, 1, output_file);
-    fwrite(data.buffer, 2 * PAGE_SIZE, 1, output_file);
+    fwrite(program.buffer, PROGRAM_PAGES * PAGE_SIZE, 1, output_file);
+    fwrite(data.buffer, PAGE_SIZE, 1, output_file);
 
 
     fclose(output_file);
