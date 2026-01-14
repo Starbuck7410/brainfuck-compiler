@@ -8,19 +8,31 @@
 #define STORE 0x89
 #define STORE_B 0x88
 #define LOAD 0x8b
+#define ADDSUB_IMM 0x81
+#define ADD_REG 0x03
+#define SUB_REG 0x2b
 #define SYSCALL (0x0f05)
 
 typedef enum {
-    INST_SET,           // set dest imm
-    INST_STORE_IMM,     // store_i imm src
-    INST_LOAD_IMM,      // load_i dest imm
-    INST_STORE_REG,     // store_r [dest] src
-    INST_LOAD_REG,      // load_r dest [src]
-    INST_STORE_B_IMM,     // storeb_i imm src
-    INST_SYSCALL        // syscall 0 0
+    INST_SET,               // set dest imm
+    INST_LOAD_REG,          // load_r dest [src]
+    INST_LOAD_IMM,          // load_i dest imm
+    INST_STORE_REG,         // store_r [dest] src
+    INST_STORE_IMM,         // store_i imm src
+    INST_STORE_B_IMM,       // storeb_i imm src
+    INST_ADD_REG,           // add dest reg
+    INST_ADD_IMM,           // add dest imm
+    INST_SUB_REG,           // sub dest reg
+    INST_SUB_IMM,           // sub dest imm
+    INST_SYSCALL            // syscall 0 0
 } instruction_T;
 
 // System calls
 
 #define SYS_WRITE 1
+#define SYS_READ 0
 #define SYS_EXIT 60
+
+// File descriptors
+#define FD_STDIN 0
+#define FD_STDOUT 1

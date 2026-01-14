@@ -24,15 +24,13 @@ size_t write_instruction(segment_T * program, instruction_T instruction, int32_t
         case INST_SYSCALL:       
             return store_sequence(program, __builtin_bswap16(SYSCALL), 2);
 
-        case INST_STORE_IMM:
-            modrm = mod_rm(0b00, param1 & 0b111, 0b101);
-            sib = sib_byte(0b00, 0b100, 0b101);
-            count += store_sequence(program, STORE, 1);
+            
+        case INST_LOAD_REG:
+            modrm = mod_rm(0b11, param0 & 0b111, param1 & 0b111);
+            count += store_sequence(program, LOAD, 1);
             count += store_sequence(program, modrm, 1);
-            count += store_sequence(program, sib, 1);
-            count += store_sequence(program, param0, 4);
             return count;
-
+        
         case INST_LOAD_IMM:
             modrm = mod_rm(0b00, param0 & 0b111, 0b100);
             sib = sib_byte(0b00, 0b100, 0b101);
@@ -41,19 +39,22 @@ size_t write_instruction(segment_T * program, instruction_T instruction, int32_t
             count += store_sequence(program, sib, 1);
             count += store_sequence(program, param1, 4);
             return count;
-
+        
         case INST_STORE_REG:
             count += store_sequence(program, STORE, 1);
             modrm = mod_rm(0b11, param1 & 0b111, param0 & 0b111);
             count += store_sequence(program, modrm, 1);
             return count;
-
-        case INST_LOAD_REG:
-            modrm = mod_rm(0b11, param0 & 0b111, param1 & 0b111);
-            count += store_sequence(program, LOAD, 1);
+        
+        case INST_STORE_IMM:
+            modrm = mod_rm(0b00, param1 & 0b111, 0b101);
+            sib = sib_byte(0b00, 0b100, 0b101);
+            count += store_sequence(program, STORE, 1);
             count += store_sequence(program, modrm, 1);
+            count += store_sequence(program, sib, 1);
+            count += store_sequence(program, param0, 4);
             return count;
-
+            
         case INST_STORE_B_IMM:
             modrm = mod_rm(0b00, param1 & 0b111, 0b100);
             sib = sib_byte(0b00, 0b100, 0b101);
@@ -63,9 +64,34 @@ size_t write_instruction(segment_T * program, instruction_T instruction, int32_t
             count += store_sequence(program, param0, 4);
             return count;
 
+        case INST_ADD_REG:
+            modrm = mod_rm(0b11, param0 & 0b111, param1 & 0b111);
+            count += store_sequence(program, ADD_REG, 1);
+            count += store_sequence(program, modrm, 1);
+            return count;
+
+        case INST_ADD_IMM:
+            modrm = mod_rm(0b11, 0b000, param0 & 0b111);
+            count += store_sequence(program, ADDSUB_IMM, 1);
+            count += store_sequence(program, modrm, 1);
+            count += store_sequence(program, param1, 4);
+            return count;
+
+        case INST_SUB_REG:
+            modrm = mod_rm(0b11, param0 & 0b111, param1 & 0b111);
+            count += store_sequence(program, SUB_REG, 1);
+            count += store_sequence(program, modrm, 1);
+            return count;
+
+        case INST_SUB_IMM:
+            modrm = mod_rm(0b11, 0b101, param0 & 0b111);
+            count += store_sequence(program, ADDSUB_IMM, 1);
+            count += store_sequence(program, modrm, 1);
+            count += store_sequence(program, param1, 4);
+            return count;
+
         default:
             return 0;
-
     }
 }
 
