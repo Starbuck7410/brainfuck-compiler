@@ -81,21 +81,24 @@ int main(int argc, char ** argv){
         }
     }
     
-    
-    // // write_instruction(&program, INST_SET_IMM, EAX, '4');
-    // // write_instruction(&program, INST_STORE_B_IMM, 0x402023, EAX);
-    // write_instruction(&program, INST_SET_IMM, ESI, BUFFER_OUTPUT);
-    // write_instruction(&program, INST_SET_IMM, EAX, SYS_WRITE);
-    // write_instruction(&program, INST_SET_IMM, EDI, FD_STDOUT);
-    // write_instruction(&program, INST_SET_IMM, EDX, 2);
-    // write_instruction(&program, INST_SYSCALL, 0, 0);  
-    
-    // // write_instruction(&program, INST_SET_IMM, EDI, 0);
-    // write_instruction(&program, INST_SUB_REG, EDI, EDI);  
-    // write_instruction(&program, INST_LOAD_IMM, EDI, BUFFER_OUTPUT);
+    // Write \n to output buffer to flush STDOUT
+    write_instruction(&program, INST_SET_IMM, EBX, '\n');
+    write_instruction(&program, INST_STORE_B_IMM, BUFFER_OUTPUT, EBX);
+    write_instruction(&program, INST_SET_IMM, EAX, 0);
+    write_instruction(&program, INST_STORE_B_IMM, BUFFER_OUTPUT + 1, EBX);
+
+    // Flush
+    write_instruction(&program, INST_SET_IMM, ESI, BUFFER_OUTPUT);
+    write_instruction(&program, INST_SET_IMM, EAX, SYS_WRITE);
+    write_instruction(&program, INST_SET_IMM, EDI, FD_STDOUT);
+    write_instruction(&program, INST_SET_IMM, EDX, 1);
+    write_instruction(&program, INST_SYSCALL, 0, 0);
+
+    // Exit with return code 0
+    write_instruction(&program, INST_SUB_REG, EDI, EDI);  
     write_instruction(&program, INST_SET_IMM, EAX, SYS_EXIT);
     write_instruction(&program, INST_SYSCALL, 0, 0);    
-    // write_data(&data, message, PAGE_SIZE);
+
     
     Elf64_Ehdr executable_header = generate_ehdr(4);
     Elf64_Phdr ehdr_header = generate_phdr(0, PAGE_SIZE, PF_R);
