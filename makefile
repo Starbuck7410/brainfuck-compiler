@@ -21,4 +21,4 @@ read: run
 
 test: dump read
 	@echo "--- Program Output ---" 
-	@bash -c './$(BFTARGET); ret=$$?; echo "Return code: $$ret"'
+	@bash -c './$(BFTARGET); ret=$$?; echo; echo "Return code: $$ret"'

@@ -1,4 +1,5 @@
 #include "../include/instructions.h"
+#include "../include/registers.h"
 
 size_t store_sequence(segment_T * program, int32_t sequence, size_t length){
     inst_buffer_T inst_buffer = {.integer = sequence};
@@ -16,8 +17,16 @@ size_t write_instruction(segment_T * program, instruction_T instruction, int32_t
     int32_t modrm = 0;
     int32_t sib = 0;
     switch (instruction){
-        case INST_SET:
-            count += store_sequence(program, SET(param0), 1);
+
+        case INST_SET_REG:
+            modrm = mod_rm(0b11, param0 & 0b111, param1 & 0b111);
+            count += store_sequence(program, LOAD, 1);
+            count += store_sequence(program, modrm, 1);
+            return count;
+
+
+        case INST_SET_IMM:
+            count += store_sequence(program, SET_IMM(param0), 1);
             count += store_sequence(program, param1, 4);
             return count;
 
@@ -26,9 +35,11 @@ size_t write_instruction(segment_T * program, instruction_T instruction, int32_t
 
             
         case INST_LOAD_REG:
-            modrm = mod_rm(0b11, param0 & 0b111, param1 & 0b111);
+
+            modrm = (param1 != EBP) ? mod_rm(0b00, param0 & 0b111, param1 & 0b111) : mod_rm(0b01, param0 & 0b111, param1 & 0b111);
             count += store_sequence(program, LOAD, 1);
             count += store_sequence(program, modrm, 1);
+            if(param1 == ESP) count += store_sequence(program, sib_byte(0b00, 0b100, 0b100), 1);
             return count;
         
         case INST_LOAD_IMM:
@@ -41,9 +52,10 @@ size_t write_instruction(segment_T * program, instruction_T instruction, int32_t
             return count;
         
         case INST_STORE_REG:
+            modrm = (param1 != EBP) ? mod_rm(0b00, param0 & 0b111, param1 & 0b111) : mod_rm(0b01, param0 & 0b111, param1 & 0b111);
             count += store_sequence(program, STORE, 1);
-            modrm = mod_rm(0b11, param1 & 0b111, param0 & 0b111);
             count += store_sequence(program, modrm, 1);
+            if(param1 == ESP) count += store_sequence(program, sib_byte(0b00, 0b100, 0b100), 1);
             return count;
         
         case INST_STORE_IMM:

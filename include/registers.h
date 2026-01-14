@@ -1,5 +1,8 @@
 #pragma once
 
+// Since ESP and EBX are not used in syscalls and things we can use them for the tape pointer and value registers
+
+
 #define AL 0
 #define AX 0
 #define EAX 0
