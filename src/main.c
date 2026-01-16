@@ -7,8 +7,8 @@
 #include "../include/stack.h"
 
 // #define ALIGN16(number) (((number) + 15) & ~15)
-#define PROGRAM_PAGES 6
-#define TAPE_PAGES 6
+#define PROGRAM_PAGES 8
+#define TAPE_PAGES 10000
 
 #define BUFFER_OUTPUT (0x401000 + ((PAGE_SIZE) * (PROGRAM_PAGES)))
 #define BUFFER_TAPE (0x402000 + ((PAGE_SIZE) * (PROGRAM_PAGES)) + ((TAPE_PAGES * (PAGE_SIZE / 2))))
@@ -55,11 +55,11 @@ int main(int argc, char ** argv){
             break;
 
             case '>':
-            write_instruction(&program, INST_ADD_IMM, TAPE_PTR, 1); 
+            write_instruction(&program, INST_ADD_IMM, TAPE_PTR, 4); 
             break;
 
             case '<':
-            write_instruction(&program, INST_SUB_IMM, TAPE_PTR, 1); 
+            write_instruction(&program, INST_SUB_IMM, TAPE_PTR, 4); 
             break;
 
             case '.':
