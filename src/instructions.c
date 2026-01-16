@@ -52,10 +52,10 @@ size_t write_instruction(segment_T * program, instruction_T instruction, int32_t
             return count;
         
         case INST_STORE_REG:
-            modrm = (param1 != EBP) ? mod_rm(0b00, param1 & 0b111, param0 & 0b111) : mod_rm(0b01, param1 & 0b111, param0 & 0b111);
+            modrm = (param0 != EBP) ? mod_rm(0b00, param1 & 0b111, param0 & 0b111) : mod_rm(0b01, param1 & 0b111, param0 & 0b111);
             count += store_sequence(program, STORE, 1);
             count += store_sequence(program, modrm, 1);
-            if(param1 == ESP) count += store_sequence(program, sib_byte(0b00, 0b100, 0b100), 1);
+            if(param0 == ESP) count += store_sequence(program, sib_byte(0b00, 0b100, 0b100), 1);
             return count;
         
         case INST_STORE_IMM:
