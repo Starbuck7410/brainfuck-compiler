@@ -52,7 +52,7 @@ size_t write_instruction(segment_T * program, instruction_T instruction, int32_t
             return count;
         
         case INST_STORE_REG:
-            modrm = (param1 != EBP) ? mod_rm(0b00, param0 & 0b111, param1 & 0b111) : mod_rm(0b01, param0 & 0b111, param1 & 0b111);
+            modrm = (param1 != EBP) ? mod_rm(0b00, param1 & 0b111, param0 & 0b111) : mod_rm(0b01, param1 & 0b111, param0 & 0b111);
             count += store_sequence(program, STORE, 1);
             count += store_sequence(program, modrm, 1);
             if(param1 == ESP) count += store_sequence(program, sib_byte(0b00, 0b100, 0b100), 1);
@@ -102,6 +102,23 @@ size_t write_instruction(segment_T * program, instruction_T instruction, int32_t
             count += store_sequence(program, param1, 4);
             return count;
 
+        case INST_CMP:
+            modrm = mod_rm(0b11, 0b111, param0 & 0b111);
+            count += store_sequence(program, CMP, 1);
+            count += store_sequence(program, modrm, 1);
+            count += store_sequence(program, param1, 4);
+            return count;
+
+        case INST_JZ:
+            count += store_sequence(program, __builtin_bswap16(JZ), 2);
+            count += store_sequence(program, param0, 4);
+            return count;
+
+        case INST_JNZ:
+            count += store_sequence(program, __builtin_bswap16(JNZ), 2);
+            count += store_sequence(program, param0, 4);
+            return count;
+
         default:
             return 0;
     }
@@ -132,4 +149,12 @@ int32_t sib_byte(int scale, int index, int base){
     index &= 0b111;
     base &= 0b111;
     return ((scale << 6) | (index << 3) | base) & 0xFF;
+}
+
+void overwrite_jump(segment_T * program, int location, int jump_distace){
+    inst_buffer_T buffer = {.integer = jump_distace};
+    
+    for (int i = 0; i < 4; i++){
+        program->buffer[location + i] = buffer.bytes[i];
+    }
 }

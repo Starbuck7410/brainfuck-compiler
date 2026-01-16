@@ -11,6 +11,9 @@
 #define ADDSUB_IMM 0x81
 #define ADD_REG 0x03
 #define SUB_REG 0x2b
+#define CMP 0x81 
+#define JZ (0x0F84)
+#define JNZ (0x0F85)
 #define SYSCALL (0x0f05)
 
 typedef enum {
@@ -25,6 +28,9 @@ typedef enum {
     INST_ADD_IMM,           // add dest imm
     INST_SUB_REG,           // sub dest reg
     INST_SUB_IMM,           // sub dest imm
+    INST_CMP,               // cmp reg imm
+    INST_JZ,                // jz imm 0
+    INST_JNZ,               // jnz imm 0
     INST_SYSCALL            // syscall 0 0
 } instruction_T;
 

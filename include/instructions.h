@@ -22,3 +22,4 @@ size_t write_instruction(segment_T * program, instruction_T instruction, int32_t
 size_t write_data(segment_T * program, char * data, int32_t count);
 int32_t mod_rm(int mod, int reg, int rm);
 int32_t sib_byte(int scale, int index, int base);
+void overwrite_jump(segment_T * program, int location, int jump_distace);
