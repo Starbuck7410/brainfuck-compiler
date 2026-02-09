@@ -20,10 +20,10 @@ typedef enum {
     INST_SET_REG,           // set_reg dest src
     INST_SET_IMM,           // set_imm dest imm
     INST_LOAD_REG,          // load_r dest [src]
-    INST_LOAD_IMM,          // load_i dest imm
+    INST_LOAD_IMM,          // load_i dest [imm]
     INST_STORE_REG,         // store_r [dest] src
-    INST_STORE_IMM,         // store_i imm src
-    INST_STORE_B_IMM,       // storeb_i imm src
+    INST_STORE_IMM,         // store_i [imm] src
+    INST_STORE_B_IMM,       // storeb_i [imm] src
     INST_ADD_REG,           // add dest reg
     INST_ADD_IMM,           // add dest imm
     INST_SUB_REG,           // sub dest reg

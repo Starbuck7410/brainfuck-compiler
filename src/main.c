@@ -5,15 +5,7 @@
 #include "../include/instructions.h" 
 #include "../include/headers.h" 
 #include "../include/stack.h"
-
-// #define ALIGN16(number) (((number) + 15) & ~15)
-#define PROGRAM_PAGES 8
-#define TAPE_PAGES 10000
-
-#define BUFFER_OUTPUT (0x401000 + ((PAGE_SIZE) * (PROGRAM_PAGES)))
-#define BUFFER_TAPE (0x402000 + ((PAGE_SIZE) * (PROGRAM_PAGES)) + ((TAPE_PAGES * (PAGE_SIZE / 2))))
-#define TAPE_VAL EBX
-#define TAPE_PTR ESP
+#include "../include/operations.h"
 
 
 int main(int argc, char ** argv){
@@ -34,95 +26,35 @@ int main(int argc, char ** argv){
     stack_T address_stack = stack_init();
     char * zeroes = malloc(PAGE_SIZE);
     FILE * input_file = fopen(argv[1], "r");
-    int jump_distance = 0;
-    int source_address = 0;
     // Setup code
-    write_instruction(&program, INST_SET_IMM, TAPE_PTR, BUFFER_TAPE);
-    write_instruction(&program, INST_SET_IMM, TAPE_VAL, 0);
+
+    write_setup(&program, &address_stack, 0, 0);
     int current_char = 0;
+    int count = 0;
+    operation_T last_op = OP_NONE;
     while((current_char = fgetc(input_file)) != EOF){
-        switch (current_char){
-            case '+':
-            write_instruction(&program, INST_LOAD_REG, TAPE_VAL, TAPE_PTR);
-            write_instruction(&program, INST_ADD_IMM, TAPE_VAL, 1); 
-            write_instruction(&program, INST_STORE_REG, TAPE_PTR, TAPE_VAL);
-            break;
+        operation_T current_op = char_to_op(current_char);
+        if(is_op_countable(current_op) && current_op == last_op){
+            count++;
+            continue;
+        } 
 
-            case '-':
-            write_instruction(&program, INST_LOAD_REG, TAPE_VAL, TAPE_PTR);
-            write_instruction(&program, INST_SUB_IMM, TAPE_VAL, 1); 
-            write_instruction(&program, INST_STORE_REG, TAPE_PTR, TAPE_VAL);
-            break;
-
-            case '>':
-            write_instruction(&program, INST_ADD_IMM, TAPE_PTR, 4); 
-            break;
-
-            case '<':
-            write_instruction(&program, INST_SUB_IMM, TAPE_PTR, 4); 
-            break;
-
-            case '.':
-            write_instruction(&program, INST_LOAD_REG, TAPE_VAL, TAPE_PTR);
-            write_instruction(&program, INST_STORE_B_IMM, BUFFER_OUTPUT, EBX);
-            write_instruction(&program, INST_SET_IMM, TAPE_VAL, 0);
-            write_instruction(&program, INST_STORE_B_IMM, BUFFER_OUTPUT + 1, TAPE_VAL);
-
-            write_instruction(&program, INST_SET_IMM, ESI, BUFFER_OUTPUT);
-            write_instruction(&program, INST_SET_IMM, EAX, SYS_WRITE);
-            write_instruction(&program, INST_SET_IMM, EDI, FD_STDOUT);
-            write_instruction(&program, INST_SET_IMM, EDX, 1);
-            write_instruction(&program, INST_SYSCALL, 0, 0);
-            break;
-            
-            case ',':
-            write_instruction(&program, INST_SET_IMM, EAX, SYS_READ);
-            write_instruction(&program, INST_SET_IMM, EDI, FD_STDIN);
-            write_instruction(&program, INST_SET_REG, ESI, TAPE_PTR);
-            write_instruction(&program, INST_SET_IMM, EDX, 1);
-            write_instruction(&program, INST_SYSCALL, 0, 0); 
-            break;
-            
-            case '[':
-            write_instruction(&program, INST_LOAD_REG, TAPE_VAL, TAPE_PTR);
-            write_instruction(&program, INST_CMP, TAPE_VAL, 0);
-            write_instruction(&program, INST_JZ, 0, 0); // Do nothing unless overwritten (Might be tweaked later)
-            stack_push(&address_stack, program.head); // Stores the location of the back jump
-            break;
-
-            case ']':
-            source_address = stack_pop(&address_stack);
-            write_instruction(&program, INST_LOAD_REG, TAPE_VAL, TAPE_PTR);
-            write_instruction(&program, INST_CMP, TAPE_VAL, 0);
-            write_instruction(&program, INST_JNZ, 0, 0); 
-            
-            jump_distance = program.head - source_address;
-            overwrite_jump(&program, source_address - 4, jump_distance);
-            overwrite_jump(&program, program.head - 4, - jump_distance);
-            break;
-
-            default:
-            break;
+        if(is_op_countable(last_op)){
+            printf("Param1: %d |\t", count);
+            select_operation(last_op, &program, &address_stack, count, 0);
         }
+        count = 1;
+        if(!is_op_countable(current_op)){
+            select_operation(current_op, &program, &address_stack, count, 0);
+        }
+        last_op = current_op;
     }
-    
-    // Write \n to output buffer to flush STDOUT
-    write_instruction(&program, INST_SET_IMM, EBX, '\n');
-    write_instruction(&program, INST_STORE_B_IMM, BUFFER_OUTPUT, EBX);
-    write_instruction(&program, INST_SET_IMM, EAX, 0);
-    write_instruction(&program, INST_STORE_B_IMM, BUFFER_OUTPUT + 1, EBX);
-
-    // Flush
-    write_instruction(&program, INST_SET_IMM, ESI, BUFFER_OUTPUT);
-    write_instruction(&program, INST_SET_IMM, EAX, SYS_WRITE);
-    write_instruction(&program, INST_SET_IMM, EDI, FD_STDOUT);
-    write_instruction(&program, INST_SET_IMM, EDX, 1);
-    write_instruction(&program, INST_SYSCALL, 0, 0);
-
-    // Exit with return code 0
-    write_instruction(&program, INST_SUB_REG, EDI, EDI);  
-    write_instruction(&program, INST_SET_IMM, EAX, SYS_EXIT);
-    write_instruction(&program, INST_SYSCALL, 0, 0);    
+    if(is_op_countable(last_op)){
+        select_operation(last_op, &program, &address_stack, count, 0);
+    }
+    printf("\n");
+    write_end(&program, &address_stack, 0, 0);
+        
 
     
     Elf64_Ehdr executable_header = generate_ehdr(4);
@@ -149,3 +81,5 @@ int main(int argc, char ** argv){
     free(zeroes);
     return 0;
 }
+
+

@@ -1,3 +1,4 @@
+#pragma once
 #include <stdlib.h>
 #define MAX_STACK_SIZE 1024
 

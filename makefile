@@ -1,6 +1,6 @@
 SOURCE=$(wildcard src/*.c)
 INCLUDE=$(wildcard include/*.h)
-CFLAGS=-Wall -Wextra
+CFLAGS=-Wall -Wextra -Wno-unused-parameter
 TARGET=bfc
 BFSOURCE=brainfuck.bf
 BFTARGET=output
@@ -8,14 +8,18 @@ BFTARGET=output
 $(TARGET): $(SOURCE) $(INCLUDE)
 	@gcc $(CFLAGS) $(SOURCE) -o $(TARGET)
 
-run: $(TARGET)
+$(BFTARGET): $(TARGET) $(BFSOURCE)
 	@./$(TARGET) $(BFSOURCE) $(BFTARGET)
 
-dump: run
+run: $(BFTARGET)
+	@bash -c './$(BFTARGET); ret=$$?; echo; echo "Return code: $$ret"'
+
+
+dump: $(BFTARGET)
 	@echo "--- Hex dump ---" 
 	@hexdump -C $(BFTARGET)
 
-read: run
+read: $(BFTARGET)
 	@echo "--- ELF Dump ---" 
 	@readelf -a $(BFTARGET)
 

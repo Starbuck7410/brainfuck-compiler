@@ -7,7 +7,12 @@
 #define EHDR_SIZE sizeof(Elf64_Ehdr)
 #define PHDR_SIZE sizeof(Elf64_Phdr)
 #define PAGE_SIZE 0x1000
-#define MAX_PROGRAMS 5
+
+#define PROGRAM_PAGES 8
+#define TAPE_PAGES 10000
+
+#define BUFFER_OUTPUT (0x401000 + ((PAGE_SIZE) * (PROGRAM_PAGES)))
+#define BUFFER_TAPE (0x402000 + ((PAGE_SIZE) * (PROGRAM_PAGES)) + ((TAPE_PAGES * (PAGE_SIZE / 2))))
 
 typedef struct {
     Elf64_Off phdr_offset;

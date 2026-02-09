@@ -42,6 +42,38 @@ make test
 
 Very simple.
 
+## Optimizations
+Soon, I will be adding optimizations to this compiler. 
+Now, the unoptimized compiler compiling [this program](https://github.com/Dougaak/Brainfuck-Calculator/blob/master/Calculator.bf), and using it to calculate the expression `1000*200=` takes 0m9.765s on my machine. As I optimize this, I will note down the times it took to calculate this expression.
+
+### Implemented Levels
+- None: Unoptimized.
+- Folding: Takes identical operations and folds them to one instruction
+
+### Unimplemented Levels
+- Pattern Recognition: Will recognize patterns such as `[-]`
+- Search Optimizations (extreme): Will optimize blocks such as `[>]` to use a faster search for a zero. Is pretty extreme so I probably will never implement it
+
+In order to test this I simply ran the following line:
+```
+time echo 1000*200= | ./output
+```
+
+| Optimization level    | Time      | Speedup   |
+|-----------------------|-----------|-----------|
+| None                  | 0m9.765s  |   x1      |
+| Folding               | 0m7.882s  |   x1.238  |
+
+## Code Architecture
+
+The code is actually not all that complicated once you try to read it.\
+Source files are located in the `src` directory, headers in the `include` directory.
+
+- `headers.c/.h` are mostly for ELF header-related functions and definitions
+- `instructions.c/.h` are for machine code instructions
+- `opcodes.h` and `registers.h` contains all the opcodes, instructions, and register names and types supported by this compiler
+- `operations.c/.h` are for brainfuck operation-related functions and definitions
+- `stack.c/.h` is a simple stack implementation for the address stack used in the `[` and `]` operations
 
 ## Notes and Thanks
 

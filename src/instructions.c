@@ -125,6 +125,7 @@ size_t write_instruction(segment_T * program, instruction_T instruction, int32_t
 }
 
 
+
 size_t write_data(segment_T * program, char * data, int32_t count){
     if(!data) return 0;
     int i = 0;
